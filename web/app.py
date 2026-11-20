@@ -79,20 +79,26 @@ def create_app() -> Flask:
 
     def load_cached_reviews() -> pd.DataFrame:
         candidates = [
-            DATA_PROCESSED_DIR / "cleaned_reviews.csv",
-            DATA_PROCESSED_DIR / "cleaned_reviews_tier_b.csv",
+            DATA_PROCESSED_DIR / "cleaned_reviews_tier_c.csv",
             DATA_RAW_DIR / "reviews_tier_c.csv",
+            DATA_PROCESSED_DIR / "cleaned_reviews_tier_b.csv",
             DATA_RAW_DIR / "reviews_medium.csv",
+            DATA_PROCESSED_DIR / "cleaned_reviews.csv",
             DATA_RAW_DIR / "reviews_sample.csv",
         ]
+        best_df = None
         for p in candidates:
             if p.exists():
                 try:
                     df = pd.read_csv(p)
-                    if len(df) > 0:
-                        return df
+                    if best_df is None or len(df) > len(best_df):
+                        best_df = df
+                        if len(best_df) >= 25000:
+                            break
                 except Exception:
                     continue
+        if best_df is not None and len(best_df) > 0:
+            return best_df
         from src.data.review_generator import generate_review_records
         return pd.DataFrame(generate_review_records(num_records=1000, seed=42))
 
@@ -154,9 +160,20 @@ def create_app() -> Flask:
     def get_kpis():
         """
         Returns dataset KPIs and sentiment distribution percentages.
+        Supports dynamic sample_size query parameter: ?sample_size=5000
         Guarantees that positive_percentage + neutral_percentage + negative_percentage == 100.0%.
         """
+        sample_size_param = request.args.get("sample_size")
         df = load_cached_reviews()
+
+        if sample_size_param and str(sample_size_param).lower() not in ("all", "25000"):
+            try:
+                n = int(sample_size_param)
+                if n > 0:
+                    df = df.head(n)
+            except ValueError:
+                pass
+
         total = int(len(df))
 
         if total > 0 and "rating" in df.columns:
@@ -179,6 +196,7 @@ def create_app() -> Flask:
 
         return jsonify({
             "total_reviews": total,
+            "sample_size": total,
             "average_rating": avg_rating,
             "positive_percentage": pos_pct,
             "neutral_percentage": neu_pct,
@@ -192,13 +210,22 @@ def create_app() -> Flask:
     def get_reviews():
         """
         Filterable REST API returning review records.
-        Supports query parameters: limit, category, sentiment.
+        Supports query parameters: limit, category, sentiment, sample_size.
         """
         limit = min(1000, max(1, int(request.args.get("limit", 20))))
         category = request.args.get("category")
         sentiment = request.args.get("sentiment")
+        sample_size_param = request.args.get("sample_size")
 
         df = load_cached_reviews()
+
+        if sample_size_param and str(sample_size_param).lower() not in ("all", "25000"):
+            try:
+                n = int(sample_size_param)
+                if n > 0:
+                    df = df.head(n)
+            except ValueError:
+                pass
 
         if category and "product_category" in df.columns and category.lower() != "all":
             df = df[df["product_category"].str.lower() == category.lower()]
@@ -419,22 +446,66 @@ def create_app() -> Flask:
                 </div>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-dark border text-info px-3 py-2"><i class="fa-solid fa-database me-1"></i> Corpus: N = 25,000</span>
+                <span class="badge bg-dark border text-info px-3 py-2" id="header-corpus-badge">
+                    <i class="fa-solid fa-database me-1"></i> <span id="header-sample-text">Corpus: N = 25,000</span>
+                </span>
                 <span class="badge bg-primary px-3 py-2"><i class="fa-solid fa-square-root-variable me-1"></i> Research Edition</span>
             </div>
         </nav>
 
         <div class="container-fluid">
+            <!-- Interactive Empirical Sample Size Controller (n <= N) -->
+            <div class="card-academic px-4 py-3 mb-4 shadow-sm">
+                <div class="row g-3 align-items-center">
+                    <div class="col-lg-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fa-solid fa-sliders text-info fs-4 me-3"></i>
+                            <div>
+                                <h6 class="academic-serif fw-bold mb-0 text-light">
+                                    Evaluation Sample Size (<span class="text-info font-monospace">n &le; N</span>)
+                                </h6>
+                                <small class="text-secondary">Select any sample value below full corpus (N = 25,000)</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="d-flex align-items-center gap-3">
+                            <input type="range" class="form-range flex-grow-1" id="sample-range" min="50" max="25000" step="50" value="25000" oninput="onSliderInput(this.value)" onchange="onSliderChange(this.value)">
+                            <div class="input-group input-group-sm" style="width: 140px;">
+                                <span class="input-group-text bg-dark text-secondary border-secondary">n =</span>
+                                <input type="number" id="sample-number-input" class="form-control bg-dark text-info border-secondary fw-bold" min="10" max="25000" value="25000" onchange="onNumberInputChange(this.value)">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between text-secondary mt-1" style="font-size: 0.75rem;">
+                            <span>Min: 50</span>
+                            <span>Tier A: 100</span>
+                            <span>Cloud: 1,000</span>
+                            <span>Tier B: 5,000</span>
+                            <span>Max: 25,000</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 text-end">
+                        <div class="btn-group btn-group-sm w-100">
+                            <button type="button" class="btn btn-outline-secondary sample-quick-btn" data-size="100" onclick="setPresetSize(100)">100</button>
+                            <button type="button" class="btn btn-outline-secondary sample-quick-btn" data-size="1000" onclick="setPresetSize(1000)">1k</button>
+                            <button type="button" class="btn btn-outline-secondary sample-quick-btn" data-size="5000" onclick="setPresetSize(5000)">5k</button>
+                            <button type="button" class="btn btn-outline-secondary sample-quick-btn" data-size="10000" onclick="setPresetSize(10000)">10k</button>
+                            <button type="button" class="btn btn-outline-info active sample-quick-btn" data-size="25000" onclick="setPresetSize(25000)">All (25k)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Empirical KPIs Row -->
             <div class="row g-3 mb-4">
                 <div class="col-md-3">
                     <div class="kpi-card shadow-sm">
                         <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-secondary text-uppercase fw-bold">Corpus Population (N)</small>
+                            <small class="text-secondary text-uppercase fw-bold">Active Sample Size (n)</small>
                             <i class="fa-solid fa-layer-group text-info"></i>
                         </div>
                         <h2 class="academic-serif fw-bold my-1 text-info" id="kpi-total">Loading...</h2>
-                        <small class="text-muted">Total Empirical Review Records</small>
+                        <small class="text-muted">Analyzed Corpus Partition</small>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -907,10 +978,64 @@ def create_app() -> Flask:
             }
 
             // ------------------------------------------------------------------
-            // Corpus KPIs & Reviews Table Loaders
+            // Corpus KPIs & Reviews Table Loaders with Dynamic Sample Size (n <= N)
             // ------------------------------------------------------------------
+            let currentSampleSize = 25000;
+
+            function updateSampleSize(newSize) {
+                newSize = Math.max(10, Math.min(25000, parseInt(newSize) || 25000));
+                currentSampleSize = newSize;
+
+                // Sync slider & number input
+                document.getElementById('sample-range').value = newSize;
+                document.getElementById('sample-number-input').value = newSize;
+
+                // Update navbar badge
+                const headerText = document.getElementById('header-sample-text');
+                if (headerText) {
+                    if (newSize >= 25000) {
+                        headerText.innerText = "Corpus: N = 25,000";
+                    } else {
+                        headerText.innerText = `Sample: n = ${newSize.toLocaleString()} / 25,000`;
+                    }
+                }
+
+                // Update preset button active states
+                document.querySelectorAll('.sample-quick-btn').forEach(btn => {
+                    btn.classList.remove('active', 'btn-outline-info');
+                    btn.classList.add('btn-outline-secondary');
+                    if (parseInt(btn.getAttribute('data-size')) === newSize) {
+                        btn.classList.add('active', 'btn-outline-info');
+                        btn.classList.remove('btn-outline-secondary');
+                    }
+                });
+
+                loadKPIs();
+                reloadTableData();
+            }
+
+            function onSliderInput(val) {
+                document.getElementById('sample-number-input').value = val;
+                const headerText = document.getElementById('header-sample-text');
+                if (headerText) {
+                    headerText.innerText = `Sample: n = ${parseInt(val).toLocaleString()} / 25,000`;
+                }
+            }
+
+            function onSliderChange(val) {
+                updateSampleSize(val);
+            }
+
+            function onNumberInputChange(val) {
+                updateSampleSize(val);
+            }
+
+            function setPresetSize(val) {
+                updateSampleSize(val);
+            }
+
             function loadKPIs() {
-                fetch('/api/kpis')
+                fetch(`/api/kpis?sample_size=${currentSampleSize}`)
                     .then(r => r.json())
                     .then(d => {
                         document.getElementById('kpi-total').innerText = (d.total_reviews || 0).toLocaleString();
@@ -927,7 +1052,7 @@ def create_app() -> Flask:
                 const sentiment = document.getElementById('table-sentiment-filter').value;
                 const category = document.getElementById('table-category-filter').value;
 
-                let url = `/api/reviews?limit=${limit}`;
+                let url = `/api/reviews?limit=${limit}&sample_size=${currentSampleSize}`;
                 if (sentiment !== 'all') url += `&sentiment=${encodeURIComponent(sentiment)}`;
                 if (category !== 'all') url += `&category=${encodeURIComponent(category)}`;
 

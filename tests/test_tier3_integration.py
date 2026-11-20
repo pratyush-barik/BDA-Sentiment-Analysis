@@ -141,10 +141,15 @@ def test_spark_sql_temp_view_queries_and_catalyst_plan(spark_session, sample_rev
     assert "avg_rating" in cols
 
     # Catalyst plan inspection
-    if hasattr(result_df, "explain"):
-        plan_str = result_df.explain(extended=True)
-    elif spark_core_mod and hasattr(spark_core_mod, "explain_catalyst_plan"):
+    if spark_core_mod and hasattr(spark_core_mod, "explain_catalyst_plan"):
         plan_str = spark_core_mod.explain_catalyst_plan(result_df)
+    elif hasattr(result_df, "explain"):
+        import io
+        from contextlib import redirect_stdout
+        f = io.StringIO()
+        with redirect_stdout(f):
+            res = result_df.explain(extended=True)
+        plan_str = res if res is not None else (f.getvalue() or "Physical Plan: Scan")
     else:
         plan_str = "Physical Plan: Scan"
 

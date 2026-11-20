@@ -343,6 +343,9 @@ class SentimentMLlibPipeline:
         classifier_type: Optional[str] = None,
     ) -> Any:
         """Fits the pipeline on the training DataFrame and caches the fitted model."""
+        if self._is_spark and isinstance(train_df, pd.DataFrame):
+            spark = SparkSessionFactory.get_or_create()
+            train_df = spark.createDataFrame(train_df)
         pipeline = self.build_pipeline(feature_type=feature_type, classifier_type=classifier_type)
         model = pipeline.fit(train_df)
         self._model = model
@@ -354,6 +357,10 @@ class SentimentMLlibPipeline:
         if m is None:
             self._init_default_model()
             m = self._model
+
+        if self._is_spark and isinstance(test_df, pd.DataFrame):
+            spark = SparkSessionFactory.get_or_create()
+            test_df = spark.createDataFrame(test_df)
 
         if hasattr(m, "transform"):
             return m.transform(test_df)
@@ -416,9 +423,10 @@ class SentimentMLlibPipeline:
             single_df = spark.createDataFrame([{"review_text": text, "sentiment_label": "neutral"}])
             res_df = self.predict(m, single_df)
             first_row = res_df.first()
-            pred_idx = float(first_row.get("prediction", 0.0))
-            sentiment = str(first_row.get("predicted_sentiment", "neutral"))
-            prob = first_row.get("probability", [0.333, 0.333, 0.334])
+            row_dict = first_row.asDict() if hasattr(first_row, "asDict") else (dict(first_row) if isinstance(first_row, dict) else {})
+            pred_idx = float(row_dict.get("prediction", 0.0))
+            sentiment = str(row_dict.get("predicted_sentiment", "neutral"))
+            prob = row_dict.get("probability", [0.333, 0.333, 0.334])
             prob_list = prob.toArray().tolist() if hasattr(prob, "toArray") else list(prob)
             conf = float(max(prob_list)) if prob_list else 0.50
             return {

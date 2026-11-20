@@ -148,14 +148,19 @@ def run_stage_ml_pipeline(csv_path: Path) -> Dict[str, Any]:
     logger.info("=== Stage 7: Spark MLlib Classification & Model Evaluation ===")
     from src.ml.spark_mllib_pipeline import SentimentMLlibPipeline
     from src.ml.evaluator import export_metrics_json
+    from src.spark_session import SparkSessionFactory
     import pandas as pd
 
+    spark = SparkSessionFactory.get_or_create("BDA_ML_Pipeline")
     pipeline = SentimentMLlibPipeline()
     df = pd.read_csv(csv_path)
 
+    # Convert to spark DataFrame if running native PySpark
+    dataset = spark.createDataFrame(df) if pipeline._is_spark else df
+
     # Train classifier models
-    model = pipeline.train(df, classifier_type="logistic_regression")
-    eval_metrics = pipeline.evaluate(model, df)
+    model = pipeline.train(dataset, classifier_type="logistic_regression")
+    eval_metrics = pipeline.evaluate(model, dataset)
 
     # Export metrics.json
     export_metrics_json(eval_metrics, REPORTS_DIR / "metrics.json")

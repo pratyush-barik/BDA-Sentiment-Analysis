@@ -156,15 +156,24 @@ def evaluate_model(model: Any, test_df: Any) -> Dict[str, Any]:
     Evaluates a trained model against test_df, extracting predictions and computing metrics.
     Accepts PySpark DataFrame, SimulatedDataFrame, or Pandas DataFrame.
     """
-    p_df = test_df.toPandas() if hasattr(test_df, "toPandas") else pd.DataFrame(test_df)
+    from src.spark_session import SparkSessionFactory
+    
+    spark = SparkSessionFactory.get_or_create()
+    is_spark_model = hasattr(model, "stages") or (hasattr(model, "_java_obj") and hasattr(model, "transform"))
 
-    if "prediction" not in p_df.columns and model is not None:
+    eval_input = test_df
+    if is_spark_model and isinstance(test_df, pd.DataFrame):
+        eval_input = spark.createDataFrame(test_df)
+
+    if isinstance(eval_input, pd.DataFrame) and "prediction" in eval_input.columns:
+        p_df = eval_input
+    else:
         if hasattr(model, "transform"):
-            res_df = model.transform(test_df)
+            res_df = model.transform(eval_input)
         elif hasattr(model, "predict"):
-            res_df = model.predict(test_df)
+            res_df = model.predict(eval_input)
         else:
-            res_df = test_df
+            res_df = eval_input
         p_df = res_df.toPandas() if hasattr(res_df, "toPandas") else pd.DataFrame(res_df)
 
     # Determine ground truth label column

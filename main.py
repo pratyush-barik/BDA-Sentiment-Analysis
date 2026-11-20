@@ -1,6 +1,6 @@
 """
 Master Pipeline Runner & CLI Orchestrator.
-File: d:/Projects/BDA/main.py
+File: main.py
 Syllabus Mapping: Units 1 to 6 (End-to-End Big Data Architecture & Management)
 Course Outcomes: CO3 (Big Data Processing) & CO4 (Machine Learning, Graph Analytics, Visualization)
 

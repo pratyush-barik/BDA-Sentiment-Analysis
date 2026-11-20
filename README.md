@@ -69,7 +69,7 @@ This project implements an enterprise-grade, intermediate-level **Big Data Produ
 ## 3. Directory Structure
 
 ```
-d:/Projects/BDA/
+BDA-Sentiment-Analysis/
 ├── data/
 │   ├── raw/                       # Generated Amazon-format raw CSV datasets
 │   │   ├── reviews_sample.csv     # 100 sample records (Tier A)
@@ -219,7 +219,7 @@ python scripts/sync_mongo_atlas.py --uri "mongodb+srv://<user>:<password>@cluste
 ### 3. Connect to MongoDB Atlas (Cloud)
 To view all database documents, compound indexes, and aggregation pipelines in real-time on your **MongoDB Atlas** account:
 1. Copy your MongoDB Atlas connection string from [cloud.mongodb.com](https://cloud.mongodb.com/).
-2. Add it to [d:\Projects\BDA\.env](file:///d:/Projects/BDA/.env):
+2. Add it to your `.env` file (copied from `.env.example`):
    ```ini
    MONGO_URI=mongodb+srv://<username>:<password>@cluster0.xxx.mongodb.net/?retryWrites=true&w=majority
    MONGO_DB_NAME=bda_reviews_db

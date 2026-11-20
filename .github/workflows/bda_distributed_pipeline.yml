@@ -1,0 +1,70 @@
+name: Big Data Distributed Sentiment Pipeline & MongoDB Sync
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      sample_size:
+        description: 'Number of review records to process'
+        required: false
+        default: '1000'
+      sync_mongo:
+        description: 'Sync to MongoDB Atlas Cloud (requires MONGO_URI secret)'
+        required: false
+        type: boolean
+        default: true
+  schedule:
+    # Daily automated sync at 00:00 UTC
+    - cron: '0 0 * * *'
+
+jobs:
+  bda_pipeline:
+    name: Execute Big Data Pipeline & Cloud Sync
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install System Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run 4-Tier Automated Verification Test Suite
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: |
+          python -m pytest
+
+      - name: Execute Full Distributed Pipeline
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: |
+          python main.py --mode full --sample-size ${{ github.event.inputs.sample_size || '500' }}
+
+      - name: Sync Data to MongoDB Atlas Cloud
+        if: ${{ secrets.MONGO_URI != '' }}
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: |
+          python -m src.database.mongo_pipeline
+
+      - name: Upload Analytical Metrics & Visual Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bda-visualizations-and-metrics
+          path: |
+            reports/metrics.json
+            reports/visualizations/*.png
+            data/processed/mongo_extracted_reviews.csv
+            data/processed/mongo_category_aggregates.json

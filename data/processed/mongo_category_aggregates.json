@@ -1,0 +1,42 @@
+[
+  {
+    "_id": "Home & Kitchen",
+    "total_reviews": 23,
+    "avg_rating": 3.48,
+    "positive_count": 13,
+    "neutral_count": 3,
+    "negative_count": 7
+  },
+  {
+    "_id": "Electronics",
+    "total_reviews": 23,
+    "avg_rating": 3.87,
+    "positive_count": 17,
+    "neutral_count": 1,
+    "negative_count": 5
+  },
+  {
+    "_id": "Sports & Outdoors",
+    "total_reviews": 21,
+    "avg_rating": 3.67,
+    "positive_count": 14,
+    "neutral_count": 3,
+    "negative_count": 4
+  },
+  {
+    "_id": "Books",
+    "total_reviews": 17,
+    "avg_rating": 3.71,
+    "positive_count": 10,
+    "neutral_count": 2,
+    "negative_count": 5
+  },
+  {
+    "_id": "Beauty & Personal Care",
+    "total_reviews": 16,
+    "avg_rating": 3.75,
+    "positive_count": 11,
+    "neutral_count": 1,
+    "negative_count": 4
+  }
+]

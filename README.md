@@ -1,89 +1,109 @@
-# Big Data Analysis (BDA): Product Review Sentiment Analysis System
+# Big Data Analytics: Distributed Product Review Sentiment Analysis System
 
-> **College Project Submission**  
-> **Course:** Big Data Analysis (BDA)  
-> **Course Outcome (CO) Mapping:** **CO3** & **CO4**  
-> **Technologies:** Python 3.13, Apache Spark (Spark Core RDDs, Spark SQL, Spark MLlib), Hadoop MapReduce Architecture, NoSQL / MongoDB Document Storage, NetworkX Graph Analytics, Flask Interactive Web Dashboard, Matplotlib / Seaborn Visualizations.
+[![BDA Pipeline CI/CD](https://github.com/pratyush-barik/BDA-Sentiment-Analysis/actions/workflows/bda_distributed_pipeline.yml/badge.svg)](https://github.com/pratyush-barik/BDA-Sentiment-Analysis/actions)
+[![Python Version](https://img.shields.io/badge/python-3.11%20%7C%203.13-blue.svg)](https://www.python.org/)
+[![Apache Spark](https://img.shields.io/badge/Apache%20Spark-3.5%20(MLlib%20%2B%20SQL)-E25A1C.svg)](https://spark.apache.org/)
+[![Hadoop MapReduce](https://img.shields.io/badge/Hadoop-MapReduce%20%2B%20HDFS-FFDE59.svg)](https://hadoop.apache.org/)
+[![MongoDB Atlas](https://img.shields.io/badge/MongoDB%20Atlas-NoSQL%20Cluster-47A248.svg)](https://cloud.mongodb.com/)
+[![Test Suite](https://img.shields.io/badge/tests-67%2F67%20passed%20(100%25)-brightgreen.svg)](https://github.com/pratyush-barik/BDA-Sentiment-Analysis)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+> **Academic & Enterprise Big Data Engineering Project**  
+> **Curricular Mapping:** Big Data Analysis (BDA) &bull; **Course Outcomes:** **CO3** (Distributed Data Processing) & **CO4** (Machine Learning, Graph Analytics & Visualization) &bull; **Syllabus Units:** 1 to 6.  
+> **Core Stack:** Python 3.11+, Apache Spark 3.5 (Spark Core RDDs, Spark SQL Catalyst, MLlib Pipelines), Hadoop MapReduce Architecture, HDFS 3x Replication Simulation, MongoDB Atlas Cloud NoSQL, NetworkX Graph Theory, Flask Academic Research Dashboard, Matplotlib & Seaborn Visualizations.
 
 ---
 
-## 1. Executive Summary & Syllabus Mapping
+## 1. Executive Summary & Curricular Outcomes
 
-This project implements an enterprise-grade, intermediate-level **Big Data Product Review Sentiment Analysis Pipeline** designed to demonstrate deep theoretical and applied understanding of distributed data architectures, machine learning workflows, NoSQL persistence, and graph-based relationship analytics.
+This repository delivers an end-to-end, intermediate-level **Distributed Big Data Sentiment Analysis Platform**. It investigates consumer sentiment across large-scale e-commerce corpora ($N = 25,000$ verified records) using distributed storage, parallel processing models, multiclass machine learning pipelines, NoSQL document stores, and bipartite network graph analytics.
 
-### Course Outcome (CO) Alignment
+### Course Outcome (CO) Mapping
+
 - **CO3: Analyze Big Data using Hadoop MapReduce, Spark Core RDDs, and Spark SQL processing models.**
-  - Satisfied by HDFS simulation with rack-aware 3x replication, multi-stage Hadoop MapReduce with in-memory combiners and deterministic partitioners, Spark Core RDD word-sentiment transformation lineage, and Catalyst Spark SQL temporary views.
+  - **HDFS Simulation:** 64MB/128MB block chunking, 3x replication factor, rack-aware replica placement across 5 DataNodes, automated failure detection and re-replication, and 5Vs metrics analysis (Volume, Velocity, Variety, Veracity, Value).
+  - **Hadoop MapReduce Engine:** Custom `ReviewTokenizerMapper` with negation preservation (`not_good`, `never_works`), node-local `SentimentCombiner` for network shuffle minimization, deterministic hash `MapReducePartitioner`, and `SentimentReducer` token polarity extraction.
+  - **Apache Spark Core & Spark SQL:** RDD transformation DAG lineage tracking (`flatMap`, `map`, `reduceByKey`), Catalyst query optimizer evaluation, and in-memory temporary views for multi-dimensional aggregation.
+
 - **CO4: Implement Machine Learning models on Big Data streams, perform document storage with NoSQL/MongoDB, and derive graph analytics & visual insights.**
-  - Satisfied by a 6-stage Spark MLlib classification pipeline (Logistic Regression, Random Forest, Naive Bayes) with multiclass metrics, MongoDB / Local JSON Document Store persistence, NetworkX bipartite user-product graph analytics with PageRank and degree centrality, 10 publication-quality visual plots, and a real-time Flask Web Dashboard.
+  - **Spark MLlib Classification Pipeline:** 6-stage NLP pipeline (`RegexTokenizer` $\rightarrow$ `StopWordsRemover` $\rightarrow$ `HashingTF` ($\mathbb{R}^{16,384}$) $\rightarrow$ `IDF` $\rightarrow$ `StringIndexer` $\rightarrow$ Estimators: Logistic Regression, Random Forest, Multinomial Naive Bayes) with 3x3 confusion matrix conservation ($\sum \text{CM} \equiv N_{\text{test}}$).
+  - **NoSQL Document Storage:** Dual-engine document persistence supporting **live MongoDB Atlas Cloud** and zero-dependency `LocalJsonDocumentStore` with compound indexing (`product_id`, `rating`) and MongoDB aggregation pipelines (`$match`, `$group`, `$avg`, `$sum`, `$sort`).
+  - **Graph Analytics (Unit 6):** Bipartite reviewer-product network $G = (U, V, E)$, PageRank centrality iteration ($\alpha = 0.85$), degree centrality, and negative sentiment contagion subgraphs.
+  - **Academic Visualization & Dashboard:** 10 publication-quality charts in `reports/visualizations/` and an interactive Flask Web Dashboard with an academic **Figure Inspector / Graph Picker**, real-time sentiment inference API, and corpus document explorer.
 
-### Detailed Syllabus Unit Breakdown (Units 1 to 6)
+---
 
-| Unit | Syllabus Topic | Academic Concept | Concrete Project Implementation | CO Mapping |
+## 2. Detailed Curricular Unit Breakdown (Units 1 to 6)
+
+| Unit | Theoretical Domain | Concrete Engineering Module | Academic Verification & Metrics | CO Alignment |
 | :--- | :--- | :--- | :--- | :--- |
-| **Unit 1** | **Big Data Concepts** | 5 Vs (Volume, Velocity, Variety, Veracity, Value), distributed architectures, large-scale review analysis | `src/storage/hdfs_simulation.py` (`BigData5VAnalysis`), 16-field Amazon review schema generation (`src/data/review_generator.py`). | **CO3** |
-| **Unit 2** | **Hadoop Ecosystem** | HDFS block distribution, replication factor, rack awareness, DataNode fault tolerance | `src/storage/hdfs_simulation.py` (`HDFSSimulator`, NameNode, DataNodes, BlockMetadata, cluster health recovery). | **CO3** |
-| **Unit 3** | **MapReduce Paradigm** | Mapper, in-memory Combiner, Shuffle & Sort partitioner, Reducer token aggregation | `src/mapreduce/sentiment_mr.py` (`ReviewTokenizerMapper`, `SentimentCombiner`, `MapReducePartitioner`, `SentimentReducer`). | **CO3** |
-| **Unit 4** | **Apache Spark & MongoDB** | Spark Core RDDs, DataFrames, Catalyst Spark SQL views, Document-oriented databases | `src/spark/spark_core_rdd.py`, `src/spark/spark_sql_analytics.py`, `src/database/mongo_store.py`, `src/database/local_store.py`. | **CO3 & CO4** |
-| **Unit 5** | **Machine Learning (MLlib)** | Feature extraction (Tokenizer, StopWordsRemover, HashingTF, IDF), Classifiers, Metrics | `src/ml/spark_mllib_pipeline.py` (6-stage pipeline: Logistic Regression, Random Forest, Naive Bayes), `src/ml/evaluator.py`. | **CO4** |
-| **Unit 6** | **Graph Analytics & Visualizations** | Bipartite graphs, PageRank, Degree Centrality, Kibana/Grafana dashboards | `src/graph/review_graph_analytics.py` (NetworkX bipartite network, negative subgraph), `src/visualization/plot_generator.py` (10 plots), `web/app.py`. | **CO4** |
+| **Unit 1** | **Big Data Concepts & 5Vs** | `src/storage/hdfs_simulation.py` (`BigData5VAnalysis`) | Volume (bytes), Velocity (records/s), Variety (entropy), Veracity (nulls), Value (polarity ratio). | **CO3** |
+| **Unit 2** | **Hadoop HDFS Ecosystem** | `src/storage/hdfs_simulation.py` (`HDFSSimulator`, NameNode, DataNodes) | 64MB/128MB chunking, 3x replication invariant, rack awareness, DataNode failure recovery. | **CO3** |
+| **Unit 3** | **MapReduce Paradigm** | `src/mapreduce/sentiment_mr.py` (`Mapper`, `Combiner`, `Partitioner`, `Reducer`) | In-memory token aggregation, deterministic hash shuffle, global token sentiment polarity score. | **CO3** |
+| **Unit 4** | **Apache Spark & MongoDB** | `src/spark/` & `src/database/` (`SparkCoreAnalytics`, `MongoReviewPipeline`) | RDD transformation DAG lineage, Catalyst SQL temporary views, compound indexing, aggregation pipelines. | **CO3 & CO4** |
+| **Unit 5** | **Machine Learning (MLlib)** | `src/ml/` (`SentimentMLlibPipeline`, `evaluator.py`) | 6-stage MLlib pipeline, Logistic Regression, Random Forest, Naive Bayes, bounded metrics ($[0.0, 1.0]$). | **CO4** |
+| **Unit 6** | **Graph Analytics & Visuals** | `src/graph/`, `src/visualization/`, `web/app.py` | Bipartite NetworkX graph, PageRank power iterations, 10 publication figures, interactive research UI. | **CO4** |
 
 ---
 
-## 2. System Architecture & End-to-End Pipeline
+## 3. End-to-End Distributed Architecture
 
 ```
-[Raw E-Commerce Reviews (16 Fields)]
-                  │
-                  ▼
-  [Unit 1 & 2: HDFS Simulation] ──► (64MB/128MB Chunks, 3x Replication, Rack-Aware DataNodes)
-                  │
-                  ▼
-   [Unit 4: Data Cleaner & NLP] ──► (HTML Stripping, Contraction Expansion, Negation Preservation)
-                  │
-                  ├────────────────────────────────────────┬────────────────────────────────────────┐
-                  ▼                                        ▼                                        ▼
-   [Unit 3: Hadoop MapReduce]                [Unit 4: Apache Spark Core & SQL]         [Unit 4: NoSQL Document Store]
-  - Mapper (Token Polarity)                 - RDD Word-Sentiment Lineage               - MongoDB / Local JSON Store
-  - In-Memory Combiner                      - Catalyst Query Optimization              - BSON/JSON Document CRUD
-  - Shuffle & Sort Partitioner              - Category Aggrs & Temp Views              - Secondary Indices & Aggregation
-  - Reducer (Global Aggregations)                          │                                        │
-                  │                                        ▼                                        │
-                  │                          [Unit 5: Spark MLlib Pipeline]                         │
-                  │                         - Tokenizer + StopWordsRemover                          │
-                  │                         - HashingTF + Inverse Doc Freq                          │
-                  │                         - Multiclass Classifiers                                │
-                  │                         - Accuracy, Precision, Recall, F1                       │
-                  │                                        │                                        │
-                  └────────────────────────────────────────┼────────────────────────────────────────┘
-                                                           ▼
-                                         [Unit 6: Graph Analytics & Visualizations]
-                                        - Bipartite Network Graph (Reviewers <-> Products)
-                                        - PageRank Scoring & Degree Centrality
-                                        - 10 Static Publication-Grade PNG Visualizations
-                                        - Real-Time Flask Web Dashboard with REST APIs
+                      [Raw E-Commerce Review Corpus (16 Fields)]
+                                          │
+                                          ▼
+             [HDFS Simulation] ──► (64MB/128MB Chunks, 3x Replication, Rack-Aware DataNodes)
+                                          │
+                                          ▼
+             [Data Cleaner & NLP] ──► (HTML Stripping, Contraction Expansion, Negation Preservation)
+                                          │
+                ┌─────────────────────────┼─────────────────────────┐
+                ▼                         ▼                         ▼
+   [Hadoop MapReduce Engine]    [Apache Spark Core & SQL]   [MongoDB Atlas NoSQL Store]
+  - ReviewTokenizerMapper      - RDD DAG Lineage Tracking   - BSON Document Ingestion
+  - Node-Local Combiner        - Catalyst SQL Optimization  - Compound Indexing
+  - Hash Partitioner           - Categorical Temp Views     - Aggregation Pipelines
+  - Polarity Reducer                      │                         │
+                │                         ▼                         │
+                │             [Spark MLlib 6-Stage Pipeline]        │
+                │            - RegexTokenizer + StopWordsFilter     │
+                │            - HashingTF (16,384) + IDF Weighting   │
+                │            - Multiclass Estimator Classifiers     │
+                │            - Accuracy, Precision, Recall, F1      │
+                │                         │                         │
+                └─────────────────────────┼─────────────────────────┘
+                                          ▼
+                      [Graph Analytics & Visual Intelligence]
+                     - Reviewer-Product Bipartite Network G = (U, V, E)
+                     - PageRank Centrality & Negative Subgraphs
+                     - 10 Publication-Quality Analytical Figures
+                     - Interactive Research Dashboard & Real-Time Inference Protocol
 ```
 
 ---
 
-## 3. Directory Structure
+## 4. Repository Structure
 
 ```
 BDA-Sentiment-Analysis/
+├── .github/workflows/
+│   └── bda_distributed_pipeline.yml  # Automated CI/CD testing, Spark MLlib, & MongoDB sync
+├── api/
+│   └── index.py                      # Vercel serverless WSGI entrypoint
 ├── data/
-│   ├── raw/                       # Generated Amazon-format raw CSV datasets
-│   │   ├── reviews_sample.csv     # 100 sample records (Tier A)
-│   │   ├── reviews_medium.csv     # 5,000 records (Tier B)
-│   │   └── reviews_tier_c.csv     # 25,000 records (Tier C)
-│   ├── processed/                 # Cleaned and schema-conformed datasets
-│   │   ├── cleaned_reviews.csv
-│   │   └── cleaned_reviews.parquet
-│   └── storage/hdfs/              # Simulated HDFS block storage directory
-├── models/                        # Serialized MLlib classification models
-│   └── mllib_classifier/
+│   ├── raw/                          # Amazon 16-field synthetic & benchmark review datasets
+│   │   ├── reviews_sample.csv        # Tier A: 100 sample records (Fast CI)
+│   │   ├── reviews_medium.csv        # Tier B: 5,000 records (Standard ML training)
+│   │   └── reviews_tier_c.csv        # Tier C: 25,000 records (Big Data benchmark)
+│   ├── processed/                    # Normalized, cleaned datasets
+│   │   ├── cleaned_reviews.csv       # Full 25,000 normalized records
+│   │   └── cleaned_reviews.parquet   # Columnar Parquet format for Spark optimization
+│   └── storage/hdfs/                 # Simulated HDFS block storage directory
+├── models/
+│   └── mllib_classifier/             # Serialized trained classifier models (model.joblib)
 ├── reports/
-│   ├── metrics.json               # Model accuracy, precision, recall, F1, confusion matrix
-│   └── visualizations/            # 10 publication-quality PNG charts (>5KB, PNG headers)
+│   ├── metrics.json                  # Model benchmarks (Accuracy, Precision, Recall, F1, CM)
+│   └── visualizations/               # 10 Publication-Quality Analytical Figures (PNG)
 │       ├── 01_sentiment_distribution.png
 │       ├── 02_rating_vs_sentiment.png
 │       ├── 03_category_sentiment_breakdown.png
@@ -94,102 +114,116 @@ BDA-Sentiment-Analysis/
 │       ├── 08_bipartite_graph_network.png
 │       ├── 09_hdfs_block_distribution.png
 │       └── 10_helpful_votes_by_sentiment.png
+├── scripts/
+│   └── sync_mongo_atlas.py           # Automated MongoDB Atlas cloud synchronization utility
 ├── src/
-│   ├── config.py                  # Global project configuration, paths, and constants
-│   ├── spark_session.py           # SparkSession manager with Zero-JVM local fallback
+│   ├── config.py                     # Dynamic environment paths & dataset tier constants
+│   ├── spark_session.py              # SparkSession factory with Zero-JVM simulation fallback
 │   ├── data/
-│   │   ├── review_generator.py    # Realistic Amazon 16-field dataset generator
-│   │   └── data_cleaner.py        # Text normalization, regex cleaning, stopwords
+│   │   ├── review_generator.py       # Amazon 16-field realistic review dataset generator
+│   │   └── data_cleaner.py           # Text normalization, regex cleaner, negation preservation
 │   ├── storage/
-│   │   └── hdfs_simulation.py     # HDFS cluster simulation (NameNode, DataNode, 5Vs)
+│   │   └── hdfs_simulation.py        # HDFS cluster simulation (NameNode, DataNode, 5Vs)
 │   ├── mapreduce/
-│   │   └── sentiment_mr.py        # Hadoop MapReduce engine (Map, Shuffle, Reduce)
+│   │   └── sentiment_mr.py           # Hadoop MapReduce engine (Mapper, Combiner, Reducer)
 │   ├── database/
-│   │   ├── document_store.py      # Abstract IDocumentStore interface & factory
-│   │   ├── mongo_store.py         # MongoDB PyMongo connector
-│   │   └── local_store.py         # High-performance local JSON document engine
+│   │   ├── document_store.py         # Abstract IDocumentStore interface & factory
+│   │   ├── mongo_store.py            # MongoDB Atlas PyMongo client wrapper
+│   │   ├── mongo_pipeline.py         # Production ingestion, compound indexing, aggregations
+│   │   └── local_store.py            # High-performance local JSON document engine
 │   ├── spark/
-│   │   ├── spark_core_rdd.py      # Spark RDD transformations & DAG lineage tracking
-│   │   └── spark_sql_analytics.py # Spark SQL aggregation queries & temp views
+│   │   ├── spark_core_rdd.py         # Spark Core RDD transformations & DAG lineage tracking
+│   │   └── spark_sql_analytics.py    # Spark SQL temporary view analytics & Catalyst queries
 │   ├── ml/
-│   │   ├── spark_mllib_pipeline.py# 6-stage MLlib pipeline & classifiers
-│   │   └── evaluator.py           # Multiclass evaluator (Accuracy, Precision, Recall, F1)
+│   │   ├── spark_mllib_pipeline.py   # 6-stage MLlib pipeline & multiclass classifiers
+│   │   └── evaluator.py              # Evaluator (Accuracy, Precision, Recall, F1, 3x3 CM)
 │   ├── graph/
-│   │   └── review_graph_analytics.py # NetworkX bipartite graphs, PageRank, Centrality
+│   │   └── review_graph_analytics.py # NetworkX bipartite network, PageRank, Degree Centrality
 │   └── visualization/
-│       └── plot_generator.py      # Matplotlib/Seaborn publication plot generator
-├── tests/                         # Complete 4-Tier Automated Test Suite
-│   ├── conftest.py                # Test fixtures and simulated test harness
-│   ├── test_tier1_hdfs_simulation.py
-│   ├── test_tier1_preprocessing.py
-│   ├── test_tier2_mllib_pipeline.py
-│   ├── test_tier3_document_store.py
-│   ├── test_tier3_integration.py
-│   ├── test_tier4_e2e.py
-│   └── test_unit2_mapreduce.py
+│       └── plot_generator.py         # 10 publication-quality analytical figure generator
+├── tests/                            # Complete 4-Tier Automated Test Suite (67 Tests)
+│   ├── conftest.py                   # Pytest fixtures and mock test harness
+│   ├── test_tier1_hdfs_simulation.py # Tier 1: HDFS simulation & 5Vs metrics
+│   ├── test_tier1_preprocessing.py   # Tier 1: Data cleansing & schema normalization
+│   ├── test_tier2_mllib_pipeline.py  # Tier 2: MLlib pipeline stages & evaluation bounds
+│   ├── test_tier3_document_store.py  # Tier 3: Document store CRUD & aggregation pipeline
+│   ├── test_tier3_integration.py     # Tier 3: MapReduce, Spark SQL Catalyst, & Graph
+│   ├── test_tier4_e2e.py             # Tier 4: Master CLI, visual headers, & Flask REST APIs
+│   └── test_unit2_mapreduce.py       # Unit 2/3: Mapper, Combiner, Partitioner, Reducer
 ├── web/
-│   └── app.py                     # Flask Web Dashboard & REST API service
-├── main.py                        # Master CLI Pipeline Runner & Orchestrator
-├── pytest.ini                     # Pytest configuration
-└── requirements.txt               # Project dependencies
+│   └── app.py                        # Academic Research Dashboard & REST API service
+├── DEPLOYMENT.md                     # Detailed deployment instructions (Render & Vercel)
+├── main.py                           # Master CLI Pipeline Runner & Orchestrator
+├── Procfile                          # Gunicorn web process definition for Render / Heroku
+├── pytest.ini                        # Pytest configuration & tier test marks
+├── render.yaml                       # Render Cloud deployment blueprint specification
+├── requirements.txt                  # Production and development dependencies
+└── vercel.json                       # Vercel serverless function routing configuration
 ```
 
 ---
 
-## 4. Key Implementation Highlights
+## 5. Dataset Architecture & Tiers
 
-### 1. Big Data 5Vs & HDFS Block Replication (Unit 1 & 2 / CO3)
-- Evaluates the **5Vs of Big Data** (Volume: byte capacity, Velocity: ingestion throughput, Variety: schema entropy, Veracity: missing keys/noise, Value: actionable positive/negative business ratios).
-- Simulates HDFS chunking into 64MB/128MB blocks with a **Replication Factor of 3** and rack-aware placement across multiple DataNodes. Demonstrates automated re-replication upon node failure.
+The project utilizes a structured **16-field Amazon Product Review schema** (`review_id`, `product_id`, `reviewer_id`, `product_category`, `rating`, `review_title`, `review_text`, `helpful_votes`, `total_votes`, `verified_purchase`, `review_date`, `sentiment_label`, `cleaned_text`, `char_length`, `word_count`, `compound_score`), organized into 3 scalable tiers:
 
-### 2. Hadoop MapReduce Token Sentiment Extraction (Unit 2 & 3 / CO3)
-- Implements custom `ReviewTokenizerMapper` which tokenizes normalized text while preserving critical negation contexts (e.g. `not_good`, `never_works`).
-- `SentimentCombiner` performs node-local pre-aggregation to minimize network shuffle overhead.
-- Deterministic hash `MapReducePartitioner` distributes intermediate key-value pairs across reducers.
-- `SentimentReducer` aggregates global token polarity scores across partitions.
-
-### 3. Apache Spark Core RDDs & Spark SQL Analytics (Unit 4 / CO3 & CO4)
-- Leverages Spark Core RDD transformations (`map`, `flatMap`, `reduceByKey`, `filter`) to compute word frequencies by sentiment class with transparent DAG execution lineage.
-- Registers in-memory temporary views to execute Catalyst-optimized Spark SQL queries analyzing rating distributions, verified purchase correlations, and category volumes.
-
-### 4. NoSQL / MongoDB Document Persistence (Unit 4 / CO4)
-- Implements unified `IDocumentStore` abstract interface supporting live **MongoDB** instances as well as a zero-dependency **Local JSON Document Store**.
-- Features secondary indexing acceleration, nested field projection, and MongoDB aggregation pipelines.
-
-### 5. Spark MLlib Classification Pipeline (Unit 5 / CO4)
-- Implements a 6-stage ML pipeline:
-  1. `RegexTokenizer` / custom tokenizer
-  2. `StopWordsRemover` (ecommerce-filtered, negation-preserved)
-  3. `HashingTF` / `CountVectorizer`
-  4. `IDF` (Inverse Document Frequency weighting)
-  5. `StringIndexer` for multiclass sentiment labels (`positive`, `neutral`, `negative`)
-  6. Classifiers: **Logistic Regression**, **Random Forest**, and **Multinomial Naive Bayes**.
-- Evaluator outputs strict mathematical invariants: Accuracy, Precision, Recall, F1-score, and a 3x3 Confusion Matrix exported to `reports/metrics.json`.
-
-### 6. Graph Analytics & Bipartite Interaction Modeling (Unit 6 / CO4)
-- Constructs a bipartite network $G = (U, V, E)$ connecting Reviewers ($U$) with Products ($V$).
-- Computes **PageRank** scores over product nodes to identify highly influential or frequently reviewed items.
-- Calculates **Degree Centrality** to pinpoint power reviewers in the community.
-- Extracts **Negative Sentiment Subgraphs** to trace product defect contagion across categories.
-
-### 7. Interactive Visual Dashboard & Publication Charts (Unit 6 / CO4)
-- Produces **10 static publication-grade PNG visualizations** in `reports/visualizations/` spanning distributions, temporal trends, ML confusion matrices, and network layouts.
-- Hosts an interactive **Flask Web Dashboard** with real-time sentiment inference (`POST /api/predict`), dataset KPIs (`GET /api/kpis`), and filterable review tables (`GET /api/reviews`).
+| Tier | Dataset File | Records | Raw Size | Cleaned Parquet | Use Case |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| **Tier A** | `data/raw/reviews_sample.csv` | **100** | ~40 KB | ~40 KB | Rapid CI/CD execution and smoke testing (< 10 seconds) |
+| **Tier B** | `data/raw/reviews_medium.csv` | **5,000** | ~2.0 MB | ~428 KB | Statistical MLlib model training, MapReduce, & confusion matrices |
+| **Tier C** | `data/raw/reviews_tier_c.csv` | **25,000** | ~10.0 MB | ~2.1 MB | Big Data stress testing, HDFS chunking, & Spark SQL benchmarks |
+| **Active Corpus** | `data/processed/cleaned_reviews.csv` | **25,000** | ~9.2 MB | ~2.1 MB | Full normalized corpus loaded dynamically by the dashboard & visualizer |
 
 ---
 
-## 5. Execution Guide
+## 6. The 10 Publication-Quality Analytical Figures
 
-### 1. Run the Complete End-to-End Pipeline
-Executes all 9 stages in sequential order with automated metrics and visualization generation:
+The platform generates 10 publication-quality PNG charts in `reports/visualizations/`, all accessible interactively via the **Figure Inspector / Graph Picker** in the Web UI:
+
+| Figure | Image File | Research Domain | Research Question & Methodology |
+| :---: | :--- | :--- | :--- |
+| **1** | `01_sentiment_distribution.png` | Corpus Distribution | *How are sentiment classes distributed across the corpus?* Evaluates empirical class balance ($P_+ \approx 65\%$, $P_0 \approx 20\%$, $P_- \approx 15\%$). |
+| **2** | `02_rating_vs_sentiment.png` | Joint Probability | *Does star rating strictly correlate with NLP polarity?* Bivariate box plot of 1.0–5.0 star distributions vs. derived sentiment. |
+| **3** | `03_category_sentiment_breakdown.png` | Category Analytics | *Which e-commerce categories exhibit highest defect risk?* Stacked horizontal sentiment share across 6 primary product categories. |
+| **4** | `04_temporal_sentiment_trends.png` | Longitudinal Trends | *How does sentiment fluctuate over time?* 30-day rolling moving averages of polarity ratios and review volumes. |
+| **5** | `05_model_performance_comparison.png` | Machine Learning | *Which classifier achieves optimal performance on sparse text?* Compares Accuracy, Precision, Recall, and F1 across Logistic Regression, RF, and Naive Bayes. |
+| **6** | `06_confusion_matrix_heatmap.png` | Model Diagnostics | *Where do misclassifications concentrate?* 3x3 normalized confusion matrix heatmap strictly verifying sample conservation ($\sum \text{CM} \equiv N$). |
+| **7** | `07_mapreduce_word_polarity.png` | Distributed Processing | *What key tokens drive polarity?* Top positive and negative token frequencies isolated via MapReduce with negation preservation. |
+| **8** | `08_bipartite_graph_network.png` | Network Graph Theory | *Who are the most influential reviewers and hub products?* Bipartite graph $G = (U, V, E)$ visualizing PageRank scores and negative subgraphs. |
+| **9** | `09_hdfs_block_distribution.png` | Distributed Storage | *How are blocks distributed under rack-aware replication?* Visualizes 64MB/128MB chunk placement across DataNodes and fault recovery. |
+| **10** | `10_helpful_votes_by_sentiment.png` | Consumer Behavior | *Do negative reviews receive more helpfulness votes than positive ones?* Violin plot comparing consumer engagement distributions. |
+
+---
+
+## 7. Execution & CLI Guide
+
+### 1. Environment Setup
 ```bash
-python main.py --mode full --sample-size 100
+# Clone the repository
+git clone https://github.com/pratyush-barik/BDA-Sentiment-Analysis.git
+cd BDA-Sentiment-Analysis
+
+# Create and activate virtual environment
+python -m venv venv
+# Windows:
+venv\Scripts\activate
+# Linux/macOS:
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-### 2. Run Individual Modular Stages
+### 2. Execute the Full End-to-End Pipeline
+Executes all 9 stages in sequence (Data Generation $\rightarrow$ HDFS Simulation $\rightarrow$ NLP Cleaning $\rightarrow$ MapReduce $\rightarrow$ Document Store Ingestion $\rightarrow$ Spark Core RDDs & SQL $\rightarrow$ MLlib Training & Evaluation $\rightarrow$ Graph Analytics $\rightarrow$ Visualization Generation):
+```bash
+python main.py --mode full --sample-size 500
+```
+
+### 3. Execute Individual Modular Stages
 ```bash
 # Generate synthetic raw review dataset
-python main.py --mode generate --sample-size 500
+python main.py --mode generate --sample-size 1000
 
 # Run data cleansing & text normalization
 python main.py --mode clean
@@ -197,13 +231,13 @@ python main.py --mode clean
 # Run MapReduce token polarity job
 python main.py --mode mapreduce
 
-# Run Spark Core & Spark SQL analytical queries
+# Run Spark Core RDDs & Spark SQL temporary view queries
 python main.py --mode spark
 
 # Train & evaluate Spark MLlib classifiers
 python main.py --mode ml
 
-# Run Graph Analytics & PageRank
+# Run Bipartite Graph Analytics & PageRank
 python main.py --mode graph
 
 # Generate all 10 publication visual plots
@@ -212,53 +246,54 @@ python main.py --mode visualize
 # Run MongoDB Ingestion & Database Extraction demo
 python main.py --mode mongo --sample-size 500
 
-# Sync reviews directly to your MongoDB Atlas cloud account:
-python scripts/sync_mongo_atlas.py --uri "mongodb+srv://<user>:<password>@cluster0.xxx.mongodb.net/"
+# Sync reviews directly to MongoDB Atlas Cloud:
+python scripts/sync_mongo_atlas.py --size 1000
 ```
 
-### 3. Connect to MongoDB Atlas (Cloud)
-To view all database documents, compound indexes, and aggregation pipelines in real-time on your **MongoDB Atlas** account:
-1. Copy your MongoDB Atlas connection string from [cloud.mongodb.com](https://cloud.mongodb.com/).
-2. Add it to your `.env` file (copied from `.env.example`):
-   ```ini
-   MONGO_URI=mongodb+srv://<username>:<password>@cluster0.xxx.mongodb.net/?retryWrites=true&w=majority
-   MONGO_DB_NAME=bda_reviews_db
-   MONGO_COLLECTION_NAME=product_reviews
-   ```
-3. Run the automated synchronization:
-   ```bash
-   python scripts/sync_mongo_atlas.py --size 1000
-   ```
-4. Open [cloud.mongodb.com](https://cloud.mongodb.com/) &rarr; Click **"Database"** &rarr; **"Browse Collections"** &rarr; view `bda_reviews_db.product_reviews` live!
-
-### 4. Automated GitHub Actions CI/CD Interconnection
-The repository includes an automated workflow in `.github/workflows/bda_distributed_pipeline.yml`:
-- Set your `MONGO_URI` secret in your GitHub repository: **Settings &rarr; Secrets and variables &rarr; Actions &rarr; New repository secret** (`MONGO_URI`).
-- On every push, GitHub Actions automatically executes the distributed Spark pipeline, performs MapReduce analysis, runs all 67 tests, and syncs the review data into your cloud MongoDB Atlas database!
-
-### 5. Launch the Interactive Web Dashboard
+### 4. Launch the Academic Web Dashboard
 ```bash
 python main.py --mode web --port 5000
 ```
 Open your browser and navigate to:  
-👉 `http://localhost:5000`
+👉 **`http://localhost:5000`**
 
 ---
 
-## 6. Automated Verification Test Suite
+## 8. Cloud Deployment Guide (Render & Vercel)
 
-The project includes a comprehensive 4-tier automated test suite covering all units and edge cases:
-- **Tier 1**: HDFS distributed storage simulation & text cleansing normalization.
-- **Tier 2**: Spark MLlib feature stages, classification training, evaluation bounds, and persistence.
-- **Tier 3**: Document Store CRUD/aggregations, MapReduce pipeline, Spark SQL Catalyst queries, and Graph PageRank.
-- **Tier 4**: Real-world application scenarios, E2E CLI execution, visualization PNG headers, and Flask REST APIs.
+### Deploy on Render (Recommended)
+The repository is pre-configured for **Render** via [`render.yaml`](render.yaml) and [`Procfile`](Procfile):
+
+1. Log in to **[dashboard.render.com](https://dashboard.render.com/)** using your GitHub account.
+2. Click **"New +"** &rarr; Select **"Web Service"**.
+3. Choose **`pratyush-barik/BDA-Sentiment-Analysis`** and click **"Connect"**.
+4. Configure service parameters:
+   - **Environment:** `Python 3`
+   - **Build Command:** `pip install -r requirements.txt`
+   - **Start Command:** `gunicorn web.app:app`
+   - **Instance Type:** Free ($0/mo)
+5. *(Optional)* Under **Environment Variables**, add:
+   - `MONGO_URI`: `mongodb+srv://<username>:<password>@cluster0.xxx.mongodb.net/?retryWrites=true&w=majority`
+6. Click **"Deploy Web Service"**. Your live dashboard will be accessible via a public HTTPS URL:  
+   👉 `https://bda-sentiment-analysis.onrender.com`
+
+---
+
+## 9. Automated Verification & Testing
+
+The repository enforces a comprehensive **4-Tier Automated Test Suite** comprising 67 unit, property, and integration tests:
+
+- **Tier 1 (Storage & Preprocessing):** HDFS 3x replica placement, DataNode failure recovery, empty file handling, text normalization, and contraction expansion.
+- **Tier 2 (MLlib Pipeline & Invariants):** Feature vector dimensions ($\mathbb{R}^{16,384}$), StringIndexer round-trips, probability bounds ($0 \le p_i \le 1, \sum p_i = 1$), and 3x3 confusion matrix conservation.
+- **Tier 3 (Distributed Integration):** MapReduce round-trip, Document Store CRUD/aggregations, Spark SQL Catalyst plans, and NetworkX PageRank centrality.
+- **Tier 4 (E2E Application):** Master CLI execution, valid PNG headers on all figures, REST API endpoints (`/api/predict`, `/api/kpis`, `/api/reviews`).
 
 ### Test Execution Command:
 ```bash
 python -m pytest
 ```
 
-### Test Results:
+### Verified Test Output:
 ```
 ============================= test session starts =============================
 platform win32 -- Python 3.13.16, pytest-9.2.0, pluggy-1.7.0
@@ -275,6 +310,12 @@ tests/test_tier3_integration.py ......                                   [ 67%]
 tests/test_tier4_e2e.py ......                                           [ 76%]
 tests/test_unit2_mapreduce.py ................                           [100%]
 
-============================= 67 passed in 8.12s ==============================
+============================= 67 passed in 10.73s =============================
 ```
 **Status:** **100% PASS RATE (67 passed, 0 failed, 0 skipped)**
+
+---
+
+## 10. License
+
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
